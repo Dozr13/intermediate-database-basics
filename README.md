@@ -1,3 +1,255 @@
+
+1.JOINS-
+1.-1
+SELECT *
+FROM invoice i
+JOIN invoice_line il ON il.invoice_id = i.invoice_id
+WHERE il.unit_price > 0.99;
+
+1.-2
+SELECT i.invoice_date, c.first_name, c.last_name, i.total
+FROM invoice i
+JOIN customer c ON i.customer_id = c.customer_id;
+
+1.-3
+SELECT c.first_name, c.last_name, e.first_name, e.last_name
+FROM customer c
+JOIN employee e ON c.support_rep_id = e.employee_id;
+
+1.-4
+SELECT al.title, ar.name
+FROM album al
+JOIN artist ar ON al.artist_id = ar.artist_id;
+
+1.-5
+SELECT pt.track_id
+FROM playlist_track pt
+JOIN playlist p ON p.playlist_id = pt.playlist_id
+WHERE p.name = 'Music';
+
+1.-6
+SELECT t.name
+FROM track t
+JOIN playlist_track pt ON pt.track_id = t.track_id
+WHERE pt.playlist_id = 5;
+
+1.-7
+SELECT t.name, p.name
+FROM track t
+JOIN playlist_track pt ON t.track_id = pt.track_id
+JOIN playlist p ON pt.playlist_id = p.playlist_id;
+
+1.-8
+SELECT t.name, a.title
+FROM track t
+JOIN album a ON t.album_id = a.album_id
+JOIN genre g ON g.genre_id = t.genre_id
+WHERE g.name = 'Alternative & Punk';
+
+--!
+1.-black-diamond 
+SELECT t.name, g.name, al.title, ar.name FROM playlist p
+	JOIN playlist_track pt ON p.playlist_id = pt.playlist_id
+  JOIN track t ON pt.track_id = t.track_id
+  JOIN genre g ON g.genre_id = t.genre_id
+  JOIN album al ON al.album_id = t.album_id
+  JOIN artist ar ON ar.artist_id = al.artist_id
+  WHERE p.name = 'Music'
+
+
+
+2.Nested Queries
+2.-1
+SELECT *
+FROM invoice
+WHERE invoice_id IN (SELECT invoice_id FROM invoice_line WHERE unit_price > 0.99);
+
+2.-2
+SELECT *
+FROM playlist_track
+WHERE playlist_id IN (SELECT playlist_id FROM playlist WHERE name = 'Music');
+
+2.-3
+SELECT name
+FROM track
+WHERE track_id IN (SELECT track_id FROM playlist_track WHERE playlist_id = 5);
+
+2.-4
+SELECT *
+FROM track
+WHERE genre_id IN (SELECT genre_id FROM genre WHERE name = 'Comedy');
+
+2.-5
+SELECT *
+FROM track
+WHERE album_id IN (SELECT album_id FROM album WHERE title = 'Fireball');
+
+2.-6
+SELECT *
+FROM track
+WHERE album_id IN ( 
+  SELECT album_id FROM album WHERE artist_id IN ( 
+    SELECT artist_id FROM artist WHERE name = 'Queen'
+  )
+); 
+
+
+
+3.Updating Rows-
+3.-1
+UPDATE customer
+SET fax = null
+WHERE fax IS NOT null;
+
+3.-2
+UPDATE customer
+SET company = 'Self'
+WHERE company IS null;
+
+3.-3
+UPDATE customer 
+SET last_name = 'Thompson' 
+WHERE first_name = 'Julia' AND last_name = 'Barnett';
+
+3.-4
+UPDATE customer
+SET support_rep_id = 4
+WHERE email = 'luisrojas@yahoo.cl';
+
+3.-5
+UPDATE track
+SET composer = 'The darkness around us'
+WHERE genre_id = (SELECT genre_id FROM genre WHERE name = 'Metal')
+AND composer IS null;
+
+
+
+4.Group By-
+4.-1
+SELECT COUNT(*), g.name
+FROM track t
+JOIN genre g ON t.genre_id = g.genre_id
+GROUP BY g.name;
+
+4.-2
+SELECT COUNT(*), g.name
+FROM track t
+JOIN genre g ON g.genre_id = t.genre_id
+WHERE g.name = 'Pop' OR g.name = 'Rock'
+GROUP BY g.name;
+
+4.-3
+SELECT ar.name, COUNT(*)
+FROM album al
+JOIN artist ar ON ar.artist_id = al.artist_id
+GROUP BY ar.name;
+
+
+
+
+5.Distinct-
+5.-1
+SELECT DISTINCT composer
+FROM track;
+
+5.-2
+SELECT DISTINCT billing_postal_code
+FROM invoice;
+
+5.-3
+SELECT DISTINCT company
+FROM customer;
+
+
+
+
+6.Delete-
+6.-1
+DELETE 
+FROM practice_delete 
+WHERE type = 'bronze';
+
+6.-2
+DELETE 
+FROM practice_delete 
+WHERE type = 'silver';
+
+6.-3
+DELETE 
+FROM practice_delete 
+WHERE value = 150;
+
+
+
+7. -black diamond
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(200),
+  email VARCHAR(250)
+);
+  
+CREATE TABLE products (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(200),
+  price INT
+);
+  
+CREATE TABLE orders (
+  id SERIAL PRIMARY KEY,
+  product_id int REFERENCES products(id),
+  user_id int REFERENCES users(id)
+);
+
+
+INSERT INTO users (name, email)
+VALUES ('wade', 'wade@wade.wade'),
+('sammie', 'sammie@sammie.sammie'),
+('joe shmoe', 'joe@shmoe.joe');
+
+INSERT INTO products(name, price)
+VALUES ('CRF-450', 9000),
+			 ('PS4', 400),
+       ('4Runner', 45000);
+
+INSERT INTO orders(user_id, product_id)
+VALUES (1, 3),
+			 (2, 1),
+       (3, 2);
+
+
+SELECT p.*
+FROM orders o
+JOIN users u ON o.user_id = u.id
+JOIN products p ON p.id = o.product_id
+WHERE u.id = 1;
+
+SELECT *
+FROM orders o
+JOIN products p ON p.id = o.product_id;
+
+
+ALTER TABLE orders
+	ADD FOREIGN KEY (user_id)
+  REFERENCES users(id);
+
+UPDATE orders
+	SET user_id = 1
+  WHERE user_id IS null;
+
+
+SELECT o.*
+	FROM orders o
+  WHERE user_id = 1
+
+SELECT COUNT(*)
+	FROM orders
+  GROUP BY user_id
+
+
+
+
+
+
 <img src="https://s3.amazonaws.com/devmountain/readme-logo.png" width="250" align="right">
 
 # Project Summary
@@ -612,6 +864,11 @@ Let's simulate an e-commerce site. We're going to need users, products, and orde
 ### Black Diamond
 
 * Get the total amount on all orders for each user.
+
+
+
+
+
 
 ### Resources
 
